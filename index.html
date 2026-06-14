@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Love Map Template</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;600;700&display=swap"
+      rel="stylesheet">
+
+    <!-- Leaflet -->
+    <link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+:root{
+  --ink:#0c0c0c;
+  --ink-soft:#333;
+  --paper:#f7f7f5;
+  --paper-muted:#e4e4e0;
+  --line:#c7c7c2;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:"Lato",sans-serif;
+  background:radial-gradient(circle at top,#fff 0%,var(--paper) 40%,var(--paper-muted) 100%);
+  color:var(--ink);
+}
+
+h1,h2,h3{
+  font-family:"Playfair Display",serif;
+  font-weight:600;
+}
+
+section{padding:80px 7vw;}
+
+.section-title{
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:.85rem;
+  color:var(--ink-soft);
+  margin-bottom:12px;
+}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+}
+
+ .scroll-arrow {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 40px;
+        text-decoration: none;
+        color: var(--ink);
+      }
+
+      .scroll-arrow span {
+        width: 20px;
+        height: 20px;
+        border-right: 2px solid var(--ink);
+        border-bottom: 2px solid var(--ink);
+        transform: rotate(45deg);
+        animation: bounce 1.6s infinite;
+      }
+
+/* MAP + LIST */
+.map-layout{
+  display:grid;
+  grid-template-columns:1.4fr 1fr;
+  gap:28px;
+  margin-top:32px;
+}
+
+.map-wrapper{
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 12px 40px rgba(0,0,0,.08);
+}
+
+#map{
+  height:520px;
+  width:100%;
+  filter:grayscale(100%) contrast(110%);
+}
+
+/* DATE LIST */
+.event-list{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  max-height:520px;
+  overflow-y:auto;
+}
+
+.event-item{
+  padding:16px 18px;
+  border-bottom:1px solid var(--line);
+  cursor:pointer;
+  transition:.2s;
+}
+
+.event-item:last-child{border-bottom:none;}
+
+.event-item:hover{
+  background:#f2f2f0;
+}
+
+.event-title{
+  font-weight:600;
+}
+
+.event-date{
+  font-size:.8rem;
+  color:var(--ink-soft);
+}
+
+/* HEART PIN */
+.heart-marker{
+  font-size:24px;
+  line-height:1;
+  color:#111;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));
+}
+
+/* FUTURE */
+.future-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:24px;
+  margin-top:32px;
+}
+
+.future-card{
+  position:relative;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:24px;
+  background:#f9f9f8;
+}
+
+/* 🔥 BLACK HEART BADGE */
+.future-card::after{
+  content:"♥";
+  position:absolute;
+  top:12px;
+  right:14px;
+  font-size:16px;
+  color:#fff;
+  background:#000;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* FOOTER */
+footer{
+  padding:40px 7vw 60px;
+  border-top:1px solid var(--line);
+  text-align:center;
+}
+
+.easter-egg{
+  background:transparent;
+  border:1px solid var(--ink);
+  padding:10px 18px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.easter-egg:hover{
+  background:var(--ink);
+  color:#fff;
+  transform:translateY(-2px);
+}
+
+/* MODAL */
+.surprise-modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(12,12,12,.7);
+  z-index:999;
+}
+
+.surprise-modal.active{display:flex;}
+
+.surprise-content{
+  background:#fff;
+  padding:32px;
+  border-radius:16px;
+  max-width:420px;
+  text-align:center;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .map-layout{
+    grid-template-columns:1fr;
+  }
+  .event-list{
+    max-height:320px;
+  }
+}
+</style>
+  </head>
+
+  <body>
+
+    <section class="hero">
+      <div>
+        <div class="section-title" id="hero-kicker"></div>
+        <h1 id="hero-title"></h1>
+        <p id="hero-subtitle"></p>
+        <a class="scroll-arrow" href="#map-section"
+          id="scroll-arrow">Explore<span></span></a>
+      </div>
+    </section>
+
+    <section id="map-section">
+      <div class="section-title" id="map-kicker"></div>
+      <h2 id="map-title"></h2>
+      <p id="map-copy"></p>
+      <p id="map-copy-secondary"></p>
+
+      <div class="map-layout">
+        <div class="map-wrapper">
+          <div id="map"></div>
+        </div>
+        <div class="event-list" id="event-list"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title" id="future-kicker"></div>
+      <h2 id="future-title"></h2>
+      <div class="future-grid" id="future-grid"></div>
+    </section>
+
+    <footer>
+      <p id="footer-copy"></p>
+      <div style="margin: 24px 0;">
+        <button class="easter-egg" id="surprise-button">Click for one last surprise</button>
+      </div>
+      <a href="https://buymeacoffee.com/giannos" target="_blank" style="color: var(--ink-soft); font-size: 0.85rem; text-decoration: none; border-bottom: 1px dotted var(--ink-soft); transition: 0.2s;">
+        ☕ Buy me a coffee if this saved your anniversary
+      </a>
+    </footer>
+
+    <div class="surprise-modal" id="surprise-modal">
+      <div class="surprise-content">
+        <h2 id="modal-title"></h2>
+        <small class="sub-text" id="modal-subtext"></small>
+        <p id="modal-date"></p>
+        <p id="modal-time"></p>
+        <p id="modal-what"></p>
+        <p id="modal-dress"></p>
+
+        <button class="easter-egg" id="close-modal">Close</button>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+
+    // =========================================================================
+    // 🛠️ CONFIGURATION OBJECT: EDIT YOUR STORY HERE 🛠️
+    // Change the text, dates, and map coordinates below to make it your own.
+    // =========================================================================
+    const siteConfig = {
+      heroKicker: "Love Map Template",
+      heroTitle: "Happy Valentine’s Day, [Name]",
+      heroSubtitle: "A customizable interactive love story you can personalize, ship, and gift.",
+      mapKicker: "The Map",
+      mapTitle: "Your Story in [City]",
+      mapCopy: "Each heart marks a memory, date spot, or milestone you want to showcase.",
+      mapCopySecondary: "Swap in your own locations, text, and photos to make it yours.",
+      futureKicker: "Future Adventures",
+      futureTitle: "Dates Still on the List",
+      footerCopy: "Built as a reusable template for personal gifts, client work, and digital products.",
+      modalTitle: "For Your Surprise Moment",
+      modalSubtext: "—replace this with your own reveal—",
+      modalDate: "Date: [Date]",
+      modalTime: "Time: [Time]",
+      modalWhat: "What: [Short description of the surprise]",
+      modalDress: "Dress code: [Optional dress code or note]",
+      dateSpots: [
+        {
+          lat: 48.137154,
+          lng: 11.576124,
+          title: "First Coffee",
+          date: "Oct 14, 2025",
+          description: "Warm drinks, first smiles, and a moment worth remembering.",
+        },
+        {
+          lat: 48.1427,
+          lng: 11.5673,
+          title: "Sunset Walk",
+          date: "May 22, 2025",
+          description: "A quiet evening when the city slowed down around you.",
+        },
+        {
+          lat: 48.158,
+          lng: 11.586,
+          title: "Museum Day",
+          date: "Aug 3, 2025",
+          description: "A calm day, a meaningful stop, and a story to keep.",
+        },
+      ],
+      futureDates: [
+        {
+          activity: "Hot Air Balloon Ride",
+          reason_missed: "Too windy this winter.",
+          proposed_date: "Spring 2026",
+          locked_in: true,
+        },
+        {
+          activity: "Night at the Opera",
+          reason_missed: "Tickets sold out.",
+          proposed_date: "Fall 2026",
+          locked_in: false,
+        },
+        {
+          activity: "Weekend Road Trip",
+          reason_missed: "We ran out of weekends.",
+          proposed_date: "Summer 2026",
+          locked_in: true,
+        },
+        {
+          activity: "Stargazing Picnic",
+          reason_missed: "Clouds refused to move.",
+          proposed_date: "Next clear night",
+          locked_in: false,
+        },
+      ],
+    };
+
+    document.getElementById("hero-kicker").textContent = siteConfig.heroKicker;
+    document.getElementById("hero-title").textContent = siteConfig.heroTitle;
+    document.getElementById("hero-subtitle").textContent = siteConfig.heroSubtitle;
+    document.getElementById("map-kicker").textContent = siteConfig.mapKicker;
+    document.getElementById("map-title").textContent = siteConfig.mapTitle;
+    document.getElementById("map-copy").textContent = siteConfig.mapCopy;
+    document.getElementById("map-copy-secondary").textContent = siteConfig.mapCopySecondary;
+    document.getElementById("future-kicker").textContent = siteConfig.futureKicker;
+    document.getElementById("future-title").textContent = siteConfig.futureTitle;
+    document.getElementById("footer-copy").textContent = siteConfig.footerCopy;
+    document.getElementById("modal-title").textContent = siteConfig.modalTitle;
+    document.getElementById("modal-subtext").textContent = siteConfig.modalSubtext;
+    document.getElementById("modal-date").textContent = siteConfig.modalDate;
+    document.getElementById("modal-time").textContent = siteConfig.modalTime;
+    document.getElementById("modal-what").textContent = siteConfig.modalWhat;
+    document.getElementById("modal-dress").textContent = siteConfig.modalDress;
+
+    // Enable smooth scroll for browsers that support it
+    document.documentElement.style.scrollBehavior = 'smooth';
+
+    // Scroll arrow click handler
+    document.getElementById('scroll-arrow').onclick = function(e) {
+      e.preventDefault();
+      const target = document.getElementById('map-section');
+      if (target) target.scrollIntoView({behavior: 'smooth'});
+    };
+
+const map = L.map("map",{scrollWheelZoom:false}).setView([48.137154,11.576124],13);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png").addTo(map);
+
+const heartIcon = L.divIcon({
+  className:"heart-marker",
+  html:"♥",
+  iconSize:[24,24],
+  iconAnchor:[12,20]
+});
+
+const list = document.getElementById("event-list");
+
+siteConfig.dateSpots.forEach(spot=>{
+  const marker = L.marker([spot.lat,spot.lng],{icon:heartIcon})
+    .addTo(map)
+    .bindPopup(`<strong>${spot.title}</strong><br><small>${spot.date}</small><p>${spot.description}</p>`);
+
+  const item = document.createElement("div");
+  item.className="event-item";
+  item.innerHTML=`<div class="event-title">${spot.title}</div><div class="event-date">${spot.date}</div>`;
+  item.onclick=()=>{
+    map.setView([spot.lat,spot.lng],16,{animate:true});
+    marker.openPopup();
+  };
+  list.appendChild(item);
+});
+
+const grid = document.getElementById("future-grid");
+siteConfig.futureDates.forEach(f=>{
+  const card = document.createElement("div");
+  card.className=`future-card${f.locked_in ? " locked" : ""}`;
+  card.innerHTML=`
+    <h3>${f.activity}</h3>
+    <p class="future-meta">Why we didn’t: ${f.reason_missed}</p>
+    <p class="future-meta">Proposed: ${f.proposed_date}</p>
+    <p class="future-meta">${f.locked_in ? "Locked In" : "Pending"}</p>
+  `;
+  grid.appendChild(card);
+});
+
+document.getElementById("surprise-button").onclick=()=>document.getElementById("surprise-modal").classList.add("active");
+document.getElementById("close-modal").onclick=()=>document.getElementById("surprise-modal").classList.remove("active");
+</script>
+
+  </body>
+</html>
