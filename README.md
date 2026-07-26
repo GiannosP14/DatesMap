@@ -5,7 +5,7 @@ A minimalist, interactive love map template built with HTML, CSS, and Leaflet.js
 **[👉 View the Live Demo Here](https://giannosp14.github.io/DatesMap/)**
 
 If this template saved you time (or saved your anniversary), consider fueling my next late-night coding session!  
-**[☕ Buy Me a Coffee](buymeacoffee.com/giannos/e/560605)**
+**[☕ Buy Me a Coffee](https://buymeacoffee.com/giannos/e/560605)**
 
 ---
 
